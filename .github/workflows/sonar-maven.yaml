@@ -1,4 +1,4 @@
-name: SonarCloud Scan
+name: CI + SonarCloud + Email Notification
 
 on:
   pull_request:
@@ -9,29 +9,62 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
+      # 1️⃣ Checkout source code from GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Required for Sonar (full git history)
+
+      # 2️⃣ Setup Java (based on your project requirement)
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
+      # 3️⃣ Cache Sonar dependencies (faster builds)
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
 
-      - name: Build and Analyze
+      # 4️⃣ Build Stage (ONLY build, no Sonar here)
+      - name: Build Project
+        run: |
+          mvn -B clean verify
+
+      # 5️⃣ Sonar Analysis Stage (separate step)
+      - name: SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.projectKey=aravindroy1_Java-Maven \
           -Dsonar.organization=aravindroy1 \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.qualitygate.wait=true
-      
+
+      # 6️⃣ Email Notification (ONLY if pipeline fails)
+      - name: Send Email on Failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ❌ Sonar Pipeline Failed
+          to: devteam@example.com
+          from: GitHub Actions
+          body: |
+            🚨 Pipeline Failed!
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.head_ref }}
+            Commit: ${{ github.sha }}
+
+            🔗 Check Logs:
+            https://github.com/${{ github.repository }}/actions
