@@ -5,13 +5,13 @@ public class App {
     private static final String MESSAGE = "Hello World!";
     private static final String PASSWORD = "123456"; // ❌ Hardcoded secret
 
-    public App() {}
-
     public static void main(String[] args) {
         System.out.println(MESSAGE);
 
-        // ❌ Bad practice: printing sensitive data
-        System.out.println("Password: " + PASSWORD);
+        // ❌ security issue (but valid Java)
+        if (PASSWORD.equals("123456")) {
+            System.out.println("Weak password");
+        }
     }
 
     public String getMessage() {
