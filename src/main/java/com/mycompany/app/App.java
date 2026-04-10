@@ -7,7 +7,7 @@
 
 //     public static void main(String[] args) {
 //         System.out.println(MESSAGE);
-
+ 
 //         // ❌ security issue (but valid Java)
 //         if (PASSWORD.equals("123456")) {
 //             System.out.println("Weak password");
