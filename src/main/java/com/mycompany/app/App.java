@@ -17,7 +17,7 @@
 //     public String getMessage() {
 //         return MESSAGE;
 //     }
-// }
+// } 
 
 package com.mycompany.app;
 
